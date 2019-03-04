@@ -8,6 +8,7 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 
 String getUID(){
     // get RFIC UID =====================================================================
+    Serial.println(mfrc522.uid.size);
     String strBuf[mfrc522.uid.size];
     for (byte i = 0; i < mfrc522.uid.size; i++) {
         strBuf[i] =  String(mfrc522.uid.uidByte[i], HEX);
@@ -29,10 +30,30 @@ void setup(){
     Serial.println(F("Scan PICC to see UID, SAK, type, and data blocks..."));
 }
 
+bool flag = false;
+
 void loop(){
+    // 新しい(同じカードではない)カードを認識した時と無い時
+    //  => 同じカードの時 と カードが乗ってないとき
+    if (! mfrc522.PICC_IsNewCardPresent()) {
+        if(flag){
+            Serial.println("同じカード");
+        }
+        return;
+    }
+
+
+    // 読み込みがエラーだった時
+    if(! mfrc522.PICC_ReadCardSerial() ){
+        return;
+    }
+
+    flag = true;
     String strUID = getUID();
-    
+    Serial.println(strUID);
+
     // Dump debug info about the card; PICC_HaltA() is automatically called
-    mfrc522.PICC_DumpToSerial(&(mfrc522.uid));
-    delay(10);
+    // mfrc522.PICC_DumpToSerial(&(mfrc522.uid));
+    mfrc522.PICC_HaltA();
+    // delay(1000);
 }
