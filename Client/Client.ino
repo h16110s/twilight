@@ -107,12 +107,20 @@ void ERROR(String message){
     }
 }
 
-void playMusic(int num){
+void playMusicSg(int num){
+    Serial.println(num + " mp3 Play");
     myDFPlayer.volume(15);
     myDFPlayer.play(num);
     delay(10);
     while(isBusy);
     myDFPlayer.volume(0);
+}
+
+void playMusic(int num){
+    Serial.println(num + " mp3 Play");
+    myDFPlayer.volume(15);
+    myDFPlayer.play(num);
+    delay(10);
 }
 
 bool isBusy(){
