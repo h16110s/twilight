@@ -3,7 +3,8 @@
 #include "enum.h"
 
 // Define =======================================
-#define DELAY_TIME 800
+#define DELAY_TIME 500
+#define NONE_COUNT 2
 // ==============================================
 
 // Functions ============================
@@ -27,6 +28,9 @@ const int dip4 = 24;
 MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 // ===================================================
 
+// Grobal 
+READ_STATUS rfidState = RFID_None;
+String strUID = "-1";
 
 String getUID(){
     // get RFIC UID =====================================================================
@@ -72,11 +76,20 @@ void loop(){
     // Main Process Initialize ======================================
     mfrc522.PCD_Init();
     READ_STATUS corState = RFID_None;    // Real Time RFID scan state
+    static int noneCount;
     // ==============================================================
 
     // None RFIDTag =================================================
     if (! mfrc522.PICC_IsNewCardPresent()) {
-        Serial.println("None");
+        if(noneCount >= NONE_COUNT){
+            rfidState = RFID_None;
+            strUID = "-1";
+        }
+        else{
+            noneCount++;
+        }
+        Serial.println("corState: " + readStatusToString(corState));
+        Serial.println("rfidState: " + readStatusToString(rfidState) + " " + strUID);
         mfrc522.PICC_HaltA();
         return;
     }
@@ -91,8 +104,13 @@ void loop(){
 
     // Main Process =================================================
     corState = RFID_GET;
-    String strUID = getUID();
-    Serial.println(strUID);
+    rfidState = RFID_GET;
+    noneCount = 0;
+    String bufUID = getUID();
+    strUID = bufUID;
+    Serial.println("corState: " + readStatusToString(corState));
+    Serial.println("rfidState: " + readStatusToString(rfidState)+ " " + strUID);
+
 
     // mfrc522.PICC_DumpToSerial(&(mfrc522.uid));
     mfrc522.PICC_HaltA();
