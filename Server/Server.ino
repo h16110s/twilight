@@ -1,5 +1,8 @@
 #include <SPI.h>
 #include <MFRC522.h>
+#include <Mirf.h>
+#include <nRF24L01.h>
+#include <MirfHardwareSpiDriver.h>
 #include "enum.h"
 
 // Define =======================================
@@ -30,7 +33,7 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 
 // Grobal 
 READ_STATUS rfidState = RFID_None;
-String strUID = "-1";
+String strUID = "-1"; // Send Status
 
 String getUID(){
     // get RFIC UID =====================================================================
@@ -52,6 +55,7 @@ String getUID(){
 
 void setup(){
     Serial.begin(9600);
+    Serial.println("Beginning ...");
     pinMode(sw1,INPUT);
     pinMode(sw2,INPUT);
     pinMode(dip1, INPUT);
@@ -62,11 +66,20 @@ void setup(){
     pinMode(ledR, OUTPUT);
 
     changeLedStatus(LED_INIT);
-
+    // MFRC522 Initialize ==================================================================================
     while (!Serial);    // Do nothing if no serial port is opened (added for Arduinos based on ATMEGA32U4)
     SPI.begin();      // Init SPI bus
     // mfrc522.PCD_Init();   // Init MFRC522
     mfrc522.PCD_DumpVersionToSerial();  // Show details of PCD - MFRC522 Card Reader details
+    // =====================================================================================================
+    
+    // nRF24L01 Initialize (Mirf Initialize) =======================
+    Mirf.spi = &MirfHardwareSpi;
+    Mirf.init();
+        // Mirf.setRADDR((byte *)"serv1");
+    Mirf.payload = sizeof(unsigned long);
+    Mirf.config();
+    // =============================================================
     Serial.println(F("Scan PICC to see UID"));
 }
 
