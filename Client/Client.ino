@@ -5,27 +5,36 @@
 #include <nRF24L01.h>
 #include <MirfHardwareSpiDriver.h>
 
+#define TARGET 0
+#define SCENE 1
+#define SOUND_NUM 2
+#define SOUND_VOL 3
+#define MOTOR_TIME 4
+#define BUF_SIZE 8
+
 // Functions ============================
 void ERROR(String message);
 void playMusic(int num);
 bool isBusy();
 void printData(byte *recvData);
-const char* getAddress();
+int getAddress();
+void dataPlay(byte *recvData);
 // ======================================
 
+
 // PIN ==================================
-const int soundRX = 5;
-const int soundTX = 6;
-const int soundBusy = 7;
-const int motorR = 8;
-const int motoeL = 9;
-const int sw = 11;
-const int ledG = 19;
-const int ledR = 20;
-const int dip1 = 21;
-const int dip2 = 22;
-const int dip3 = 23;
-const int dip4 = 24;
+const int soundRX = 2;
+const int soundTX = 3;
+const int soundBusy = 4;
+const int motorR = 5;
+const int motorL = 6;
+const int sw = 11; //
+const int ledG = 14; 
+const int ledR = 15; 
+const int dip1 = 16; 
+const int dip2 = 17; 
+const int dip3 = 18; 
+const int dip4 = 19; 
 // ======================================
 
 // SerialPort and other ==============================
@@ -38,13 +47,13 @@ void setup() {
     myDFSerial.begin (9600);
 
     pinMode(soundBusy,INPUT);
-    pinMode(sw, INPUT);
+    // pinMode(sw, INPUT);
     pinMode(dip1, INPUT);
     pinMode(dip2, INPUT);
     pinMode(dip3, INPUT);
     pinMode(dip4, INPUT);
     pinMode(motorR,OUTPUT);
-    pinMode(motoeL,OUTPUT);
+    pinMode(motorL,OUTPUT);
     pinMode(ledG, OUTPUT);
     pinMode(ledR, OUTPUT);
 
@@ -54,43 +63,49 @@ void setup() {
     // =================================================
 
     //DFPlayer Initialize ==============================
-    //set softwareSerial for DFPlayer-mini mp3 module 
+    // set softwareSerial for DFPlayer-mini mp3 module 
     if(!myDFPlayer.begin(myDFSerial)){
         ERROR("DFPlayer初期化エラー");
     }
+    // myDFPlayer.begin(myDFSerial);
     Serial.println(F("DFPlayer 接続済み"));
+    myDFPlayer.volume(0);
     // =================================================
 
     // Network Initialize ==============================
     Mirf.spi = &MirfHardwareSpi;
     Mirf.init();
-    const char* address = getAddress();
-    Mirf.setRADDR((byte *) address); 
-    Mirf.payload = sizeof(unsigned long);
+    Mirf.setRADDR((byte *)"clie1");
+    Mirf.payload = BUF_SIZE;
     Mirf.config();
     Serial.println("Listening...");
+    Serial.println(getAddress());
     // =================================================
 }
+
 
 void loop() {
     // LED MODE CHANGE (Green Status)===================
     digitalWrite(ledG,HIGH);
     digitalWrite(ledR,LOW);
     // =================================================
-
-    byte recvData[Mirf.payload];  // 最大32bit, byteの行列なので要素数は4
-    Mirf.getData(recvData);
-    // if (recvData[0] == buttonOpen) {  // スイッチを押していない情報であれば
-    //   Serial.println("OFF");
-    //   digitalWrite(ledPin, LOW);
-    // } 
-    // else {                          // スイッチを押した情報であれば
-    //   Serial.println("ON");
-    //   digitalWrite(ledPin, HIGH);
-    // }
-    delay(100);
+    static int sceneNum = 0;
+    byte recvData[Mirf.payload] = {0}; 
+    if (!Mirf.isSending() && Mirf.dataReady()) {
+        // Data Recive
+        Mirf.getData(recvData);
+        printData(recvData);
+        if(recvData[0] != getAddress()) {
+            sceneNum = 0;
+            return;
+        }
+        else if(sceneNum == recvData[SCENE]){
+            return;
+        }
+        sceneNum = recvData[SCENE];
+        dataPlay(recvData);
+    }
 }
-
 
 void ERROR(String message){
     // LED MODE CHANGE (Error Status)===================
@@ -108,28 +123,23 @@ void ERROR(String message){
 }
 
 void playMusicSg(int num){
-    Serial.println(num + " mp3 Play");
-    myDFPlayer.volume(15);
+    Serial.println(num);
+    Serial.println(".mp3 Play");
+    // myDFPlayer.volume(15);
     myDFPlayer.play(num);
-    delay(10);
-    while(isBusy);
+    delay(100);
+    while(digitalRead(soundBusy) == LOW);
     myDFPlayer.volume(0);
 }
 
 void playMusic(int num){
-    Serial.println(num + " mp3 Play");
-    myDFPlayer.volume(15);
+    Serial.println(num);
+    Serial.println( ".mp3 Play");
+    if(digitalRead(soundBusy) == LOW)
+        return;
+    // myDFPlayer.volume(15);
     myDFPlayer.play(num);
     delay(10);
-}
-
-bool isBusy(){
-    if(digitalRead(soundBusy) == HIGH){
-        return true;
-    }
-    else{
-        return false;
-    }
 }
 
 void printData(byte *recvData){
@@ -141,7 +151,7 @@ void printData(byte *recvData){
     Serial.println();
 }
 
-const char* getAddress(){
+int getAddress(){
     int address = 0;
     if(digitalRead(dip1) == HIGH){
         address += 1;
@@ -155,5 +165,23 @@ const char* getAddress(){
     if(digitalRead(dip4) == HIGH){
         address += 8;
     }
-    return "client" + address;
+    return address;
+}
+
+void motorON(){
+    digitalWrite(motorL, HIGH); 
+    digitalWrite(motorR, HIGH);
+}
+
+void motorOFF(){
+    digitalWrite(motorR, LOW);
+    digitalWrite(motorL, LOW);
+}
+
+void dataPlay(byte *recvData){
+    myDFPlayer.volume(recvData[SOUND_VOL]);
+    playMusic(recvData[SOUND_NUM]);
+    motorON();
+    delay(recvData[MOTOR_TIME]*1000);
+    motorOFF();
 }

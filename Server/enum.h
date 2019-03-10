@@ -37,3 +37,17 @@ String ledStatusToString(LED_STATUS ls){
             break;
     }
 }
+
+// class MediaData{
+// private:
+//     String UID;
+//     byte* sendData;
+
+// public:
+//     MediaData(byte *data, int bufsize){
+//         for(int i = 0; i < bufsize; i++){
+//             sendData[i] = data[i];
+//         }
+//     }
+//     String getUID() {return UID};
+// };

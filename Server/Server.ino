@@ -8,19 +8,27 @@
 // Define =======================================
 #define DELAY_TIME 500
 #define NONE_COUNT 2
+#define ERROR_DELAY 100
+#define BUF_SIZE 8
+#define DEVICE_NUM 2
+#define UID1 "e6 2d 0d 9f"
+#define UID2 "60 48 8c 4d"
 // ==============================================
 
 // Functions ============================
 void changeLedStatus(LED_STATUS);
+void printData(byte *recvData);
+String getUID();
 // ======================================
+
 
 // PIN ==========================================
 const int sw1 = 5;
 const int sw2 = 6;
 constexpr uint8_t RST_PIN = 9;          // Configurable, see typical pin layout above
 constexpr uint8_t SS_PIN = 10;         // Configurable, see typical pin layout above
-const int ledG = 19;
-const int ledR = 20;
+const int ledG = 14;
+const int ledR = 15;
 const int dip1 = 21;
 const int dip2 = 22;
 const int dip3 = 23;
@@ -34,24 +42,6 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 // Grobal 
 READ_STATUS rfidState = RFID_None;
 String strUID = "-1"; // Send Status
-
-String getUID(){
-    // get RFIC UID =====================================================================
-    // Serial.println(mfrc522.uid.size);
-    String strBuf[mfrc522.uid.size];
-    String s = "";
-    for (byte i = 0; i < mfrc522.uid.size; i++) {
-        strBuf[i] =  String(mfrc522.uid.uidByte[i], HEX);
-        if(strBuf[i].length() == 1){
-          strBuf[i] = "0" + strBuf[i];
-        }
-        s += strBuf[i];
-        if(i + 1 != mfrc522.uid.size) s += " ";
-    }
-    return s;
-    // ==================================================================================
-}
-
 
 void setup(){
     Serial.begin(9600);
@@ -76,8 +66,9 @@ void setup(){
     // nRF24L01 Initialize (Mirf Initialize) =======================
     Mirf.spi = &MirfHardwareSpi;
     Mirf.init();
-        // Mirf.setRADDR((byte *)"serv1");
-    Mirf.payload = sizeof(unsigned long);
+    Mirf.setRADDR((byte *)"serv1");
+    Mirf.setTADDR((byte *)"clie1");
+    Mirf.payload = BUF_SIZE;
     Mirf.config();
     // =============================================================
     Serial.println(F("Scan PICC to see UID"));
@@ -90,6 +81,7 @@ void loop(){
     mfrc522.PCD_Init();
     READ_STATUS corState = RFID_None;    // Real Time RFID scan state
     static int noneCount;
+    byte sendData[Mirf.payload] = {0};
     // ==============================================================
 
     // None RFIDTag =================================================
@@ -101,32 +93,55 @@ void loop(){
         else{
             noneCount++;
         }
-        Serial.println("corState: " + readStatusToString(corState));
-        Serial.println("rfidState: " + readStatusToString(rfidState) + " " + strUID);
-        mfrc522.PICC_HaltA();
-        return;
     }
     // ==============================================================
 
-    // Tag Read Error ===============================================
-    if(! mfrc522.PICC_ReadCardSerial() ){
-        corState = RFID_ERROR;
-        return;
-    }
-    // ==============================================================
+    else {
+        // Tag Read Error ===============================================
+        if(! mfrc522.PICC_ReadCardSerial() ){
+            corState = RFID_ERROR;
+            changeLedStatus(LED_ERROR);
+            Serial.println("Can't Read RFID tag");
+            delay(ERROR_DELAY);
+            return;
+        }
+        // ==============================================================
 
-    // Main Process =================================================
-    corState = RFID_GET;
-    rfidState = RFID_GET;
-    noneCount = 0;
-    String bufUID = getUID();
-    strUID = bufUID;
-    Serial.println("corState: " + readStatusToString(corState));
+        // RFID Process =================================================
+        corState = RFID_GET;
+        rfidState = RFID_GET;
+        noneCount = 0;
+        String bufUID = getUID();
+        strUID = bufUID;
+        if(strUID.equalsIgnoreCase(UID1)){
+            sendData[0] = 1;   // TARGET
+            sendData[1] = 1;    // Scene num
+            sendData[2] = 2;   // Sound num
+            sendData[3] = 1;  // Sound Volume
+            sendData[4] = 1;  // Motor
+            sendData[5] = 100;
+        }else if(strUID.equalsIgnoreCase(UID2)){
+            sendData[0] = 0;   // TARGET
+            sendData[1] = 2;    // Sean num
+            sendData[2] = 2;   // Sound num
+            sendData[3] = 1;  // Sound Volume
+            sendData[4] = 1;  // Motor
+            sendData[5] = 100;
+        }
+    }
+    // Serial.println("corState: " + readStatusToString(corState));
     Serial.println("rfidState: " + readStatusToString(rfidState)+ " " + strUID);
-
-
     // mfrc522.PICC_DumpToSerial(&(mfrc522.uid));
     mfrc522.PICC_HaltA();
+    // if(rfidState == RFID_None) return;      
+    // ==============================================================
+
+    // nRF24L01+ Process ============================================
+    if (!Mirf.isSending() && Mirf.dataReady()) {
+        Mirf.send(sendData);
+        printData(sendData);
+        delay(100);
+    }
     // ==============================================================
 }
 
@@ -151,4 +166,30 @@ void changeLedStatus(LED_STATUS status){
         default:
             break;
     };
+}
+
+void printData(byte *recvData){
+    Serial.print("sendData: ");
+    for (int i = 0;i < Mirf.payload;i++) {
+        Serial.print(recvData[i]);
+        Serial.print(" ");
+    }
+    Serial.println();
+}
+
+String getUID(){
+    // get RFIC UID =====================================================================
+    // Serial.println(mfrc522.uid.size);
+    String strBuf[mfrc522.uid.size];
+    String s = "";
+    for (byte i = 0; i < mfrc522.uid.size; i++) {
+        strBuf[i] =  String(mfrc522.uid.uidByte[i], HEX);
+        if(strBuf[i].length() == 1){
+          strBuf[i] = "0" + strBuf[i];
+        }
+        s += strBuf[i];
+        if(i + 1 != mfrc522.uid.size) s += " ";
+    }
+    return s;
+    // ==================================================================================
 }
