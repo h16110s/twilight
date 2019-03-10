@@ -1,46 +1,8 @@
-#include <SoftwareSerial.h>
-#include <DFRobotDFPlayerMini.h>
-#include <SPI.h>
-#include <Mirf.h>
-#include <nRF24L01.h>
-#include <MirfHardwareSpiDriver.h>
 
-#define TARGET 0
-#define SCENE 1
-#define SOUND_NUM 2
-#define SOUND_VOL 3
-#define MOTOR_TIME 4
-#define BUF_SIZE 8
-
-// Functions ============================
-void ERROR(String message);
-void playMusic(int num);
-bool isBusy();
-void printData(byte *recvData);
-int getAddress();
-void dataPlay(byte *recvData);
-// ======================================
+#include "enum.h"
 
 
-// PIN ==================================
-const int soundRX = 2;
-const int soundTX = 3;
-const int soundBusy = 4;
-const int motorR = 5;
-const int motorL = 6;
-const int sw = 11; //
-const int ledG = 14; 
-const int ledR = 15; 
-const int dip1 = 16; 
-const int dip2 = 17; 
-const int dip3 = 18; 
-const int dip4 = 19; 
-// ======================================
 
-// SerialPort and other ==============================
-SoftwareSerial myDFSerial(soundRX, soundTX); // RX, TX
-DFRobotDFPlayerMini myDFPlayer;
-// ===================================================
 
 void setup() {
     Serial.begin (9600);
@@ -65,7 +27,7 @@ void setup() {
     //DFPlayer Initialize ==============================
     // set softwareSerial for DFPlayer-mini mp3 module 
     if(!myDFPlayer.begin(myDFSerial)){
-        ERROR("DFPlayer初期化エラー");
+        ERROR("DFPlayer接続エラー");
     }
     // myDFPlayer.begin(myDFSerial);
     Serial.println(F("DFPlayer 接続済み"));
@@ -81,6 +43,10 @@ void setup() {
     Serial.println("Listening...");
     Serial.println(getAddress());
     // =================================================
+
+
+    // Timer Initialize ==============================
+    unsigned long time;
 }
 
 
@@ -90,22 +56,33 @@ void loop() {
     digitalWrite(ledR,LOW);
     // =================================================
     static int sceneNum = 0;
-    byte recvData[Mirf.payload] = {0}; 
+    byte recvData[Mirf.payload] = {0};
     if (!Mirf.isSending() && Mirf.dataReady()) {
         // Data Recive
         Mirf.getData(recvData);
         printData(recvData);
-        if(recvData[TARGET] != getAddress()) {
-            sceneNum = 0;
+        // Same SCENE data
+        if(sceneNum == recvData[SCENE]){
             return;
         }
-        else if(sceneNum == recvData[SCENE]){
+        // RFID none
+        else if( recvData[TARGET] == 0){
+            sceneNum = 0;
+            dataStop();
+            return;
+        }
+        // not Target data
+        else if(recvData[TARGET] != getAddress()) {
+            sceneNum = 0;
             return;
         }
         sceneNum = recvData[SCENE];
         dataPlay(recvData);
     }
 }
+
+
+
 
 void ERROR(String message){
     // LED MODE CHANGE (Error Status)===================
@@ -182,6 +159,13 @@ void dataPlay(byte *recvData){
     myDFPlayer.volume(recvData[SOUND_VOL]);
     playMusic(recvData[SOUND_NUM]);
     motorON();
-    delay(recvData[MOTOR_TIME]*1000);
+    // delay(recvData[MOTOR_TIME]*1000);
+    MsTimer2::set(recvData[MOTOR_TIME]*1000, dataStop);
+    MsTimer2::start();
+}
+
+void dataStop(){
+    Serial.println("Data Stop");
     motorOFF();
+    MsTimer2::stop();
 }

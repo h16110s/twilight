@@ -118,14 +118,14 @@ void loop(){
             sendData[1] = 1;    // Scene num
             sendData[2] = 2;   // Sound num
             sendData[3] = 1;  // Sound Volume
-            sendData[4] = 1;  // Motor
+            sendData[4] = 10;  // Motor
             sendData[5] = 100;
         }else if(strUID.equalsIgnoreCase(UID2)){
-            sendData[0] = 0;   // TARGET
+            sendData[0] = 2;   // TARGET
             sendData[1] = 2;    // Sean num
             sendData[2] = 2;   // Sound num
             sendData[3] = 1;  // Sound Volume
-            sendData[4] = 1;  // Motor
+            sendData[4] = 10;  // Motor
             sendData[5] = 100;
         }
     }
