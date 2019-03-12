@@ -82,6 +82,7 @@ void loop(){
     READ_STATUS corState = RFID_None;    // Real Time RFID scan state
     static int noneCount;
     byte sendData[Mirf.payload] = {0};
+    byte tmp[Mirf.payload] = {2};
     // ==============================================================
 
     // None RFIDTag =================================================
@@ -118,15 +119,15 @@ void loop(){
             sendData[1] = 1;    // Scene num
             sendData[2] = 2;   // Sound num
             sendData[3] = 1;  // Sound Volume
-            sendData[4] = 10;  // Motor
-            sendData[5] = 100;
+            sendData[4] = 3;  // Motor
+            sendData[5] = 5;
         }else if(strUID.equalsIgnoreCase(UID2)){
             sendData[0] = 2;   // TARGET
             sendData[1] = 2;    // Sean num
             sendData[2] = 2;   // Sound num
             sendData[3] = 1;  // Sound Volume
-            sendData[4] = 10;  // Motor
-            sendData[5] = 100;
+            sendData[4] = 5;  // Motor
+            sendData[5] = 2;
         }
     }
     // Serial.println("corState: " + readStatusToString(corState));
@@ -137,10 +138,11 @@ void loop(){
     // ==============================================================
 
     // nRF24L01+ Process ============================================
-    if (!Mirf.isSending() && Mirf.dataReady()) {
+    if (!Mirf.isSending()) {
         Mirf.send(sendData);
+        delay(10);
         printData(sendData);
-        delay(100);
+        delay(500);
     }
     // ==============================================================
 }

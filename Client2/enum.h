@@ -5,12 +5,14 @@
 #include <nRF24L01.h>
 #include <MirfHardwareSpiDriver.h>
 #include <MsTimer2.h>
+#include <TimerOne.h>
 
 #define TARGET 0
 #define SCENE 1
 #define SOUND_NUM 2
 #define SOUND_VOL 3
 #define MOTOR_TIME 4
+#define START_DELAY 5
 #define BUF_SIZE 8
 
 
@@ -21,7 +23,8 @@ void playMusic(int num);
 bool isBusy();
 void printData(byte *recvData);
 int getAddress();
-void dataPlay(byte *recvData);
+void dataPlay();
+byte* cpyData(byte *dst, byte *src);
 // ======================================
 
 

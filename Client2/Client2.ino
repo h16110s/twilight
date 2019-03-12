@@ -3,7 +3,6 @@
 
 
 
-
 void setup() {
     Serial.begin (9600);
     myDFSerial.begin (9600);
@@ -44,29 +43,29 @@ void setup() {
     Serial.println(getAddress());
     // =================================================
 
-
-    // Timer Initialize ==============================
-    unsigned long time;
-}
-
-
-void loop() {
     // LED MODE CHANGE (Green Status)===================
     digitalWrite(ledG,HIGH);
     digitalWrite(ledR,LOW);
     // =================================================
+}
+
+volatile byte dataAddr[BUF_SIZE];
+volatile bool clieBusy = false;
+
+void loop() {
     static int sceneNum = 0;
     byte recvData[Mirf.payload] = {0};
-    if (!Mirf.isSending() && Mirf.dataReady()) {
+    if (Mirf.dataReady()) {
         // Data Recive
         Mirf.getData(recvData);
         printData(recvData);
+        cpyData(dataAddr, recvData);
         // Same SCENE data
-        if(sceneNum == recvData[SCENE]){
+        if(sceneNum == recvData[SCENE]&& clieBusy){
             return;
         }
         // RFID none
-        else if( recvData[TARGET] == 0){
+         if( recvData[TARGET] == 0){
             sceneNum = 0;
             dataStop();
             return;
@@ -77,11 +76,16 @@ void loop() {
             return;
         }
         sceneNum = recvData[SCENE];
-        dataPlay(recvData);
+        // Set to Start Interrupt
+        if(!clieBusy) {
+            Serial.println(recvData[START_DELAY]);
+            clieBusy = true;
+            MsTimer2::set(recvData[START_DELAY]*1000, dataPlay);
+            MsTimer2::start();
+        }
+        dataPlay();
     }
 }
-
-
 
 
 void ERROR(String message){
@@ -100,9 +104,9 @@ void ERROR(String message){
 }
 
 void playMusicSg(int num){
-    Serial.println(num);
+    Serial.print(num);
     Serial.println(".mp3 Play");
-    // myDFPlayer.volume(15);
+    myDFPlayer.volume(15);
     myDFPlayer.play(num);
     delay(100);
     while(digitalRead(soundBusy) == LOW);
@@ -110,11 +114,11 @@ void playMusicSg(int num){
 }
 
 void playMusic(int num){
-    Serial.println(num);
+    Serial.print(num);
     Serial.println( ".mp3 Play");
     if(digitalRead(soundBusy) == LOW)
         return;
-    // myDFPlayer.volume(15);
+    myDFPlayer.volume(30);
     myDFPlayer.play(num);
     delay(10);
 }
@@ -126,6 +130,13 @@ void printData(byte *recvData){
         Serial.print(" ");
     }
     Serial.println();
+}
+
+byte* cpyData(byte *dst, byte *src){
+    for (int i = 0;i < Mirf.payload;i++) {
+        dst[i] = src[i];
+    }
+    return dst;
 }
 
 int getAddress(){
@@ -155,17 +166,21 @@ void motorOFF(){
     digitalWrite(motorL, LOW);
 }
 
-void dataPlay(byte *recvData){
-    myDFPlayer.volume(recvData[SOUND_VOL]);
-    playMusic(recvData[SOUND_NUM]);
+void dataPlay(){
+    MsTimer2::stop();
+    // printData(dataAddr);
+    Serial.println("Data Play");
+    myDFPlayer.volume(dataAddr[SOUND_VOL]);
+    playMusic(dataAddr[SOUND_NUM]);
     motorON();
-    // delay(recvData[MOTOR_TIME]*1000);
-    MsTimer2::set(recvData[MOTOR_TIME]*1000, dataStop);
+    // Set To Stop Interrupt
+    MsTimer2::set(dataAddr[MOTOR_TIME]*1000, dataStop);
     MsTimer2::start();
 }
 
 void dataStop(){
     Serial.println("Data Stop");
+    clieBusy = false;
     motorOFF();
-    MsTimer2::stop();
+    myDFPlayer.stop();
 }
