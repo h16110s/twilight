@@ -73,6 +73,7 @@ void setup(){
     // =============================================================
     Serial.println(F("Scan PICC to see UID"));
 }
+int calcCheckSum(byte *)
 
 void loop(){
     changeLedStatus(LED_GREEN); //Change LED Mode
@@ -117,10 +118,10 @@ void loop(){
         if(strUID.equalsIgnoreCase(UID1)){
             sendData[0] = 1;   // TARGET
             sendData[1] = 1;    // Scene num
-            sendData[2] = 2;   // Sound num
             sendData[3] = 1;  // Sound Volume
             sendData[4] = 3;  // Motor
             sendData[5] = 5;
+            sendData[8] = 100;
         }else if(strUID.equalsIgnoreCase(UID2)){
             sendData[0] = 2;   // TARGET
             sendData[1] = 2;    // Sean num
@@ -128,6 +129,7 @@ void loop(){
             sendData[3] = 1;  // Sound Volume
             sendData[4] = 5;  // Motor
             sendData[5] = 2;
+            sendData[8] = 100;
         }
     }
     // Serial.println("corState: " + readStatusToString(corState));
