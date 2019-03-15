@@ -13,6 +13,9 @@
 #define DEVICE_NUM 2
 #define UID1 "e6 2d 0d 9f"
 #define UID2 "60 48 8c 4d"
+#define UID3 "04 3b a0 62 bb 2b 80"
+#define UID4 "04 59 a0 62 bb 2b 80"
+#define UID5 "04 1d a0 62 bb 2b 80"
 // ==============================================
 
 // Functions ============================
@@ -73,7 +76,6 @@ void setup(){
     // =============================================================
     Serial.println(F("Scan PICC to see UID"));
 }
-int calcCheckSum(byte *)
 
 void loop(){
     changeLedStatus(LED_GREEN); //Change LED Mode
@@ -82,14 +84,18 @@ void loop(){
     mfrc522.PCD_Init();
     READ_STATUS corState = RFID_None;    // Real Time RFID scan state
     static int noneCount;
-    byte sendData[Mirf.payload] = {0};
-    byte tmp[Mirf.payload] = {2};
+    byte sendData[DEVICE_NUM+1][Mirf.payload] = {0};
+    for(int i = 0; i < DEVICE_NUM + 1 ; i++){
+        for(int j = 0 ; j < Mirf.payload ; j++){
+            sendData[i][j] = 0;
+        }
+    }
     // ==============================================================
 
     // None RFIDTag =================================================
     if (! mfrc522.PICC_IsNewCardPresent()) {
+        rfidState = RFID_None;
         if(noneCount >= NONE_COUNT){
-            rfidState = RFID_None;
             strUID = "-1";
         }
         else{
@@ -116,20 +122,50 @@ void loop(){
         String bufUID = getUID();
         strUID = bufUID;
         if(strUID.equalsIgnoreCase(UID1)){
-            sendData[0] = 1;   // TARGET
-            sendData[1] = 1;    // Scene num
-            sendData[3] = 1;  // Sound Volume
-            sendData[4] = 3;  // Motor
-            sendData[5] = 5;
-            sendData[8] = 100;
+            sendData[1][0] = 1;   // TARGET
+            sendData[1][1] = 1;    // Scene num
+            sendData[1][2] = 1;   // Sound num
+            sendData[1][3] = 1;  // Sound Volume
+            sendData[1][4] = 1;  // Motor
+            sendData[1][5] = 1;
+            sendData[1][8] = 100;
+            sendData[2][0] = 2;   // TARGET
+            sendData[2][1] = 1;    // Sean num
+            sendData[2][2] = 1;   // Sound num
+            sendData[2][3] = 1;  // Sound Volume
+            sendData[2][4] = 1;  // Motor
+            sendData[2][5] = 6;
+            sendData[2][8] = 100;
         }else if(strUID.equalsIgnoreCase(UID2)){
-            sendData[0] = 2;   // TARGET
-            sendData[1] = 2;    // Sean num
-            sendData[2] = 2;   // Sound num
-            sendData[3] = 1;  // Sound Volume
-            sendData[4] = 5;  // Motor
-            sendData[5] = 2;
-            sendData[8] = 100;
+            sendData[1][0] = 1;   // TARGET
+            sendData[1][1] = 2;    // Scene num
+            sendData[1][2] = 2;   // Sound num
+            sendData[1][3] = 1;  // Sound Volume
+            sendData[1][4] = 3;  // Motor
+            sendData[1][5] = 1;
+            sendData[1][8] = 100;
+            sendData[2][0] = 2;   // TARGET
+            sendData[2][1] = 2;    // Sean num
+            sendData[2][2] = 2;   // Sound num
+            sendData[2][3] = 1;  // Sound Volume
+            sendData[2][4] = 3;  // Motor
+            sendData[2][5] = 6;
+            sendData[2][8] = 100;
+        }else if(strUID.equalsIgnoreCase(UID3)){
+            sendData[1][0] = 1;   // TARGET
+            sendData[1][1] = 3;    // Scene num
+            sendData[1][2] = 3;   // Sound num
+            sendData[1][3] = 3;  // Sound Volume
+            sendData[1][4] = 3;  // Motor
+            sendData[1][5] = 1;
+            sendData[1][8] = 100;
+            sendData[2][0] = 2;   // TARGET
+            sendData[2][1] = 3;    // Sean num
+            sendData[2][2] = 3;   // Sound num
+            sendData[2][3] = 1;  // Sound Volume
+            sendData[2][4] = 3;  // Motor
+            sendData[2][5] = 6;
+            sendData[2][8] = 100;
         }
     }
     // Serial.println("corState: " + readStatusToString(corState));
@@ -141,10 +177,11 @@ void loop(){
 
     // nRF24L01+ Process ============================================
     if (!Mirf.isSending()) {
-        Mirf.send(sendData);
-        delay(10);
-        printData(sendData);
-        delay(500);
+        for(int i = 1 ; i < DEVICE_NUM +1 ; i++){
+            Mirf.send(sendData[i]);
+            delay(20);
+            printData(sendData[i]);
+        }
     }
     // ==============================================================
 }
@@ -197,3 +234,4 @@ String getUID(){
     return s;
     // ==================================================================================
 }
+

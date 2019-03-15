@@ -1,6 +1,5 @@
 
 #include "enum.h"
-
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
   #include <avr/power.h>
@@ -13,12 +12,25 @@
 #define RGB 3
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(LED_NUM, PIN, NEO_GRB + NEO_KHZ800);
 
+int targetLedColor[RGB] = {0};
+int currentLedColor[RGB] = {0};
+
+void motorON(){
+    digitalWrite(motorL, HIGH); 
+    digitalWrite(motorR, HIGH);
+}
+
+void motorOFF(){
+    digitalWrite(motorR, LOW);
+    digitalWrite(motorL, LOW);
+}
+
 void setup() {
     Serial.begin (9600);
     myDFSerial.begin (9600);
 
     pinMode(soundBusy,INPUT);
-    // pinMode(sw, INPUT);
+    pinMode(sw, INPUT);
     pinMode(dip1, INPUT);
     pinMode(dip2, INPUT);
     pinMode(dip3, INPUT);
@@ -53,115 +65,69 @@ void setup() {
     Serial.println(getAddress());
     // =================================================
 
-    // LED MODE CHANGE (Green Status)===================
-    digitalWrite(ledG,HIGH);
-    digitalWrite(ledR,LOW);
-    // =================================================
-
     // NeoPixcel setup =================================
     #if defined (__AVR_ATtiny85__)
     if (F_CPU == 16000000) clock_prescale_set(clock_div_1);
     #endif
     pixels.begin();
     // =================================================
+
+
+    // LED MODE CHANGE (Green Status)===================
+    digitalWrite(ledG,HIGH);
+    digitalWrite(ledR,LOW);
+    // =================================================
 }
 
-volatile byte dataAddr[BUF_SIZE];
-volatile bool clieBusy = false;
-int targetLedColor[RGB] = {0};
-int currentLedColor[RGB] = {0};
+void changeMotorState(int timer){
+    static unsigned long startTime;
+    if(timer == 0){
+        motorOFF();
+    }
+    else if(digitalRead(motorL)==LOW && digitalRead(motorR)==LOW ){
+        startTime =  millis();
+        motorON();
+    }
+    else if(digitalRead(motorL)==HIGH && digitalRead(motorR)==HIGH ){
+        if(  millis() - startTime >= timer){
+            motorOFF();
+        }
+    }
+}
+
+void playMusic(int num, int vol){
+    if(digitalRead(soundBusy) == LOW) return;
+    Serial.print(num);
+    Serial.println( ".mp3 Play");
+    myDFPlayer.volume(vol);
+    myDFPlayer.loop(num);
+}
+
 
 void loop() {
-    
-    static int sceneNum = 0;
     byte recvData[Mirf.payload] = {0};
     if (Mirf.dataReady()) {
         // Data Recive
         Mirf.getData(recvData);
-        printData(recvData);
-        cpyData(dataAddr, recvData);
         // Same SCENE data
-        if(sceneNum == recvData[SCENE]&& clieBusy){
-            return;
-        }
+        // if(sceneNum == recvData[SCENE]){
+        //     return;
+        // }
         // RFID none
          if( recvData[TARGET] == 0){
-            sceneNum = 0;
             dataStop();
             return;
         }
         // not Target data
         else if(recvData[TARGET] != getAddress()) {
-            sceneNum = 0;
             return;
         }
-        sceneNum = recvData[SCENE];
-        // Set to Start Interrupt
-        /*
-        if(!clieBusy) {
-            Serial.println(recvData[START_DELAY]);
-            clieBusy = true;
-            MsTimer2::set(recvData[START_DELAY]*1000, dataPlay);
-            MsTimer2::start();
-        }
-        */
-        dataPlay();
+        printData(recvData);
+        changeMotorState(recvData[MOTOR_TIME]*10);
+        playMusic(recvData[SOUND_NUM],30);
+        changeLedColor(recvData[SCENE]);
+        updateLedColor();
     }
-    changeLedColor(sceneNum);
-    updateLedColor();
-}
-
-void changeLedColor(int sceneNum) {
-
-  switch (sceneNum) {
-    case 0:
-        setLedColor(0, 0, 0);
-      break;
-
-    case 1:
-        setLedColor(100, 0, 200);
-      break;
-
-    case 2:
-        setLedColor(200, 200, 0);
-      break;
-
-      case 3:
-        setLedColor(200, 0, 0);
-      break;
-
-    default:
-        setLedColor(0, 0, 0);
-      break;
-  }
-}
-
-void setLedColor(int R, int G, int B) {
-  targetLedColor[0] = G;
-  targetLedColor[1] = R;
-  targetLedColor[2] = B;
-}
-
-void updateLedColor() {
-
-  // update color data ====================================
-  for (int i = 0; i < RGB; i++) {
-    if (targetLedColor[i] > currentLedColor[i])
-      currentLedColor[i]++;
-    else if (targetLedColor[i] < currentLedColor[i])
-      currentLedColor[i]--;
-    else
-      ;
-  }
-  // ======================================================
-
-  // LED output ===========================================
-  for (int i = 0; i < LED_BOOK; i++)
-    pixels.setPixelColor(i, pixels.Color(0, 0, 0));
-  for (int i = 6; i < LED_DOME; i++)
-    pixels.setPixelColor(i, pixels.Color(currentLedColor[0], currentLedColor[1], currentLedColor[2]));
-  pixels.show();
-  // ======================================================
 }
 
 
@@ -190,15 +156,7 @@ void playMusicSg(int num){
     myDFPlayer.volume(0);
 }
 
-void playMusic(int num){
-    Serial.print(num);
-    Serial.println( ".mp3 Play");
-    if(digitalRead(soundBusy) == LOW)
-        return;
-    myDFPlayer.volume(30);
-    myDFPlayer.play(num);
-    delay(10);
-}
+
 
 void printData(byte *recvData){
     Serial.print("recvData: ");
@@ -209,12 +167,6 @@ void printData(byte *recvData){
     Serial.println();
 }
 
-byte* cpyData(byte *dst, byte *src){
-    for (int i = 0;i < Mirf.payload;i++) {
-        dst[i] = src[i];
-    }
-    return dst;
-}
 
 int getAddress(){
     int address = 0;
@@ -233,31 +185,59 @@ int getAddress(){
     return address;
 }
 
-void motorON(){
-    digitalWrite(motorL, HIGH); 
-    digitalWrite(motorR, HIGH);
-}
-
-void motorOFF(){
-    digitalWrite(motorR, LOW);
-    digitalWrite(motorL, LOW);
-}
-
-void dataPlay(){
-    MsTimer2::stop();
-    // printData(dataAddr);
-    Serial.println("Data Play");
-    myDFPlayer.volume(dataAddr[SOUND_VOL]);
-    playMusic(dataAddr[SOUND_NUM]);
-    motorON();
-    // Set To Stop Interrupt
-    MsTimer2::set(dataAddr[MOTOR_TIME]*1000, dataStop);
-    MsTimer2::start();
-}
-
 void dataStop(){
     Serial.println("Data Stop");
-    clieBusy = false;
     motorOFF();
     myDFPlayer.stop();
+}
+
+void setLedColor(int R, int G, int B) {
+  targetLedColor[0] = G;
+  targetLedColor[1] = R;
+  targetLedColor[2] = B;
+}
+
+void changeLedColor(int sceneNum) {
+  switch (sceneNum) {
+    case 0:
+        setLedColor(0, 0, 0);
+      break;
+
+    case 1:
+        setLedColor(100, 0, 200);
+      break;
+
+    case 2:
+        setLedColor(200, 200, 0);
+      break;
+
+      case 3:
+        setLedColor(200, 0, 0);
+      break;
+
+    default:
+        setLedColor(0, 0, 0);
+      break;
+  }
+}
+
+void updateLedColor() {
+  // update color data ====================================
+  for (int i = 0; i < RGB; i++) {
+    if (targetLedColor[i] > currentLedColor[i])
+      currentLedColor[i]+=8;
+    else if (targetLedColor[i] < currentLedColor[i])
+      currentLedColor[i]-=8;
+    else
+      ;
+  }
+  // ======================================================
+
+  // LED output ===========================================
+  for (int i = 0; i < LED_BOOK; i++)
+    pixels.setPixelColor(i, pixels.Color(0, 0, 0));
+  for (int i = 6; i < LED_DOME; i++)
+    pixels.setPixelColor(i, pixels.Color(currentLedColor[0], currentLedColor[1], currentLedColor[2]));
+  pixels.show();
+  // ======================================================
 }
