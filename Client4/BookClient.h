@@ -8,7 +8,7 @@
 #include <nRF24L01.h>
 #include <MirfHardwareSpiDriver.h>
 #include <Adafruit_NeoPixel.h>
-
+#include "PLED.h"
 #ifdef __AVR__
   #include <avr/power.h>
 #endif
@@ -61,7 +61,9 @@ void dataStop();
 void motorON();
 void motorOFF();
 void changeMotorState(int timer);
+String ledStatusToString(LED_STATUS ls);
 String readStatusToString(READ_STATUS rs);
+void changeLedStatus(LED_STATUS ls);
 void updateLedColor();
 void changeLedColor(int sceneNum);
 void setLedColor(int R, int G, int B);

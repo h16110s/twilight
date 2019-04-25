@@ -16,7 +16,8 @@ void setup() {
     pinMode(ledR, OUTPUT);
 
     // LED MODE CHANGE (Initialize Status) =============
-    changeLedStatus(LED_INIT);
+    PowerLed pled = PowerLed(ledR, ledG);
+    pled.changeStatus(LED_INIT);
     // =================================================
 
     //DFPlayer Initialize ==============================
@@ -37,9 +38,9 @@ void setup() {
     Serial.print("ネットワーク準備：このクライアントは");
     Serial.print(getAddress());
     Serial.println("番");
-    Serial.println("接続テスト開始・・・")
+    Serial.println("接続テスト開始・・・");
     while(true){
-        byte sendData[Mirf.payload];
+        byte sendData[Mirf.payload] = {0};
         if(Mirf.dataReady()){
             Mirf.getData(sendData);
             if(sendData[0] == getAddress()){
@@ -53,7 +54,6 @@ void setup() {
     // =================================================
 
     // NeoPixcel setup =================================
-
     #if defined (__AVR_ATtiny85__)
     if (F_CPU == 16000000) clock_prescale_set(clock_div_1);
     #endif
@@ -61,7 +61,7 @@ void setup() {
     // =================================================
 
     // LED MODE CHANGE (Green Status)===================
-    changeLedStatus(LED_GREEN);
+    pled.changeStatus(LED_GREEN);
     // =================================================
 }
 
