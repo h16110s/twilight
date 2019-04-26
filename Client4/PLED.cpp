@@ -1,7 +1,7 @@
 #include "PLED.h"
 
 
-void changeStatus(LED_STATUS status){
+void PowerLed::changeStatus(LED_STATUS status){
     switch(status){
         case LED_INIT:
             // LED MODE CHANGE (Initialize Status) =============
@@ -23,7 +23,7 @@ void changeStatus(LED_STATUS status){
     }
 }
 
-static void changeStatus(LED_STATUS status,int red, int green){
+static void PowerLed::changeStatus(LED_STATUS status,int red, int green){
     switch(status){
         case LED_INIT:
             // LED MODE CHANGE (Initialize Status) =============
@@ -45,7 +45,7 @@ static void changeStatus(LED_STATUS status,int red, int green){
     }
 }
 
-static String ledStatusToString(LED_STATUS ls){
+static String PowerLed::ledStatusToString(LED_STATUS ls){
     switch (ls){
         case LED_INIT:
             return "Init";
