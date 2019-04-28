@@ -91,24 +91,24 @@ void changeLedColor(int sceneNum) {
 }
 
 void updateLedColor() {
-    // update color data ====================================
-    for (int i = 0; i < RGB; i++) {
-        if (targetLedColor[i] > currentLedColor[i])
-            currentLedColor[i]+=8;
-        else if (targetLedColor[i] < currentLedColor[i])
-            currentLedColor[i]-=8;
-        else
-            ;
-    }
-    // ======================================================
+  // update color data ====================================
+  for (int i = 0; i < RGB; i++) {
+    if (targetLedColor[i] > currentLedColor[i])
+      currentLedColor[i]+=8;
+    else if (targetLedColor[i] < currentLedColor[i])
+      currentLedColor[i]-=8;
+    else
+      ;
+  }
+  // ======================================================
 
-    // LED output ===========================================
-    for (int i = 0; i < LED_BOOK; i++)
-        pixels.setPixelColor(i, pixels.Color(0, 0, 0));
-    for (int i = 6; i < LED_DOME; i++)
-        pixels.setPixelColor(i, pixels.Color(currentLedColor[0], currentLedColor[1], currentLedColor[2]));
-    pixels.show();
-    // ======================================================
+  // LED output ===========================================
+  for (int i = 0; i < LED_BOOK; i++)
+    pixels.setPixelColor(i, pixels.Color(0, 0, 0));
+  for (int i = 6; i < LED_DOME; i++)
+    pixels.setPixelColor(i, pixels.Color(currentLedColor[0], currentLedColor[1], currentLedColor[2]));
+  pixels.show();
+  // ======================================================
 }
 
 void changeMotorState(int timer){
@@ -167,3 +167,38 @@ String readStatusToString(READ_STATUS rs){
 }
 
 
+String ledStatusToString(LED_STATUS ls){
+    switch (ls)
+    {
+        case LED_INIT:
+            return "Init";
+        case LED_ERROR:
+            return "Read";
+        case LED_GREEN:
+            return "Green";
+        default:
+            break;
+    }
+}
+
+void changeLedStatus(LED_STATUS status){
+    switch(status){
+        case LED_INIT:
+            // LED MODE CHANGE (Initialize Status) =============
+            digitalWrite(ledG,HIGH);
+            digitalWrite(ledR,HIGH);
+            break;
+        case LED_ERROR:
+            // LED MODE CHANGE (Error Status) =============
+            digitalWrite(ledG,LOW);
+            digitalWrite(ledR,HIGH);
+            break;
+        case LED_GREEN:
+            // LED MODE CHANGE (Error Status) =============
+            digitalWrite(ledG,HIGH);
+            digitalWrite(ledR,LOW);
+            break;
+        default:
+            break;
+    };
+}

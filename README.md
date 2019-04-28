@@ -8,6 +8,7 @@
 - MFRC522 ... ArduinoIDEから追加
 - [nRF24L01+](http://playground.arduino.cc/InterfacingWithHardware/Nrf24L01#.UyByz_l_vh4)
 ここからMirfライブラリをDLして追加
+- 追加でlibをArduinoのライブラリフォルダにコピーして使用する．
 
 # 内容
 ## Server

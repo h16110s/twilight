@@ -34,22 +34,8 @@ void setup() {
     Mirf.setRADDR((byte *)"clie1");
     Mirf.payload = BUF_SIZE;
     Mirf.config();
-    Serial.print("ネットワーク準備：このクライアントは");
     Serial.print(getAddress());
-    Serial.println("番");
-    Serial.println("接続テスト開始・・・")
-    while(true){
-        byte sendData[Mirf.payload];
-        if(Mirf.dataReady()){
-            Mirf.getData(sendData);
-            if(sendData[0] == getAddress()){
-                Serial.println("親機を確認");
-                break;
-            }
-        }
-        delay(100);
-    }
-    Serial.println("ネットワーク準備完了");
+
     // =================================================
 
     // NeoPixcel setup =================================

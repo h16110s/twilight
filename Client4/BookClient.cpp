@@ -57,7 +57,7 @@ int getAddress(){
 void dataStop(){
     Serial.println("Data Stop");
     motorOFF();
-    myDFPlayer.stop();
+    // myDFPlayer.stop();
 }
 
 void setLedColor(int R, int G, int B) {
@@ -113,18 +113,21 @@ void updateLedColor() {
 
 void changeMotorState(int timer){
     static unsigned long startTime;
-    if(timer == 0){
-        motorOFF();
-    }
-    else if(digitalRead(motorL)==LOW && digitalRead(motorR)==LOW ){
-        startTime =  millis();
-        motorON();
-    }
-    else if(digitalRead(motorL)==HIGH && digitalRead(motorR)==HIGH ){
-        if(  millis() - startTime >= timer){
-            motorOFF();
-        }
-    }
+    // if(timer == 0){
+    //     motorOFF();
+    // }
+    // else if(digitalRead(motorL)==LOW && digitalRead(motorR)==LOW ){
+    //     startTime =  millis();
+    //     motorON();
+    // }
+    // else if(digitalRead(motorL)==HIGH && digitalRead(motorR)==HIGH ){
+    //     if(  millis() - startTime >= timer){
+    //         motorOFF();
+    //     }
+    // }
+    motorON();
+    delay(timer);
+    motorOFF();
 }
 
 void playMusic(int num, int vol){
@@ -132,7 +135,7 @@ void playMusic(int num, int vol){
     Serial.print(num);
     Serial.println( ".mp3 Play");
     myDFPlayer.volume(vol);
-    myDFPlayer.loop(num);
+    myDFPlayer.play(num);
 }
 
 
@@ -166,39 +169,3 @@ String readStatusToString(READ_STATUS rs){
     }
 }
 
-
-String ledStatusToString(LED_STATUS ls){
-    switch (ls)
-    {
-        case LED_INIT:
-            return "Init";
-        case LED_ERROR:
-            return "Read";
-        case LED_GREEN:
-            return "Green";
-        default:
-            break;
-    }
-}
-
-void changeLedStatus(LED_STATUS status){
-    switch(status){
-        case LED_INIT:
-            // LED MODE CHANGE (Initialize Status) =============
-            digitalWrite(ledG,HIGH);
-            digitalWrite(ledR,HIGH);
-            break;
-        case LED_ERROR:
-            // LED MODE CHANGE (Error Status) =============
-            digitalWrite(ledG,LOW);
-            digitalWrite(ledR,HIGH);
-            break;
-        case LED_GREEN:
-            // LED MODE CHANGE (Error Status) =============
-            digitalWrite(ledG,HIGH);
-            digitalWrite(ledR,LOW);
-            break;
-        default:
-            break;
-    };
-}

@@ -1,5 +1,8 @@
 #include "BookClient.h"
 
+PowerLed pled(ledR,ledG);
+int address;
+
 void setup() {
     Serial.begin (9600);
     myDFSerial.begin (9600);
@@ -16,9 +19,11 @@ void setup() {
     pinMode(ledR, OUTPUT);
 
     // LED MODE CHANGE (Initialize Status) =============
-    PowerLed pled = PowerLed(ledR, ledG);
     pled.changeStatus(LED_INIT);
     // =================================================
+
+    address = getAddress();
+
 
     //DFPlayer Initialize ==============================
     // set softwareSerial for DFPlayer-mini mp3 module 
@@ -35,25 +40,11 @@ void setup() {
     Mirf.setRADDR((byte *)"clie1");
     Mirf.payload = BUF_SIZE;
     Mirf.config();
-    Serial.print("ネットワーク準備：このクライアントは");
     Serial.print(getAddress());
-    Serial.println("番");
-    Serial.println("接続テスト開始・・・");
-    while(true){
-        byte sendData[Mirf.payload] = {0};
-        if(Mirf.dataReady()){
-            Mirf.getData(sendData);
-            if(sendData[0] == getAddress()){
-                Serial.println("親機を確認");
-                break;
-            }
-        }
-        delay(100);
-    }
-    Serial.println("ネットワーク準備完了");
     // =================================================
 
     // NeoPixcel setup =================================
+
     #if defined (__AVR_ATtiny85__)
     if (F_CPU == 16000000) clock_prescale_set(clock_div_1);
     #endif
@@ -66,8 +57,10 @@ void setup() {
 }
 
 void loop() {
+    unsigned long waitTime;
+    unsigned long startTime;
     byte recvData[Mirf.payload] = {0};
-    if (Mirf.dataReady()) {
+    if (Mirf.dataReady() ) {
         // Data Recive
         Mirf.getData(recvData);
         // Same SCENE data
@@ -75,18 +68,21 @@ void loop() {
         //     return;
         // }
         // RFID none
-         if( recvData[TARGET] == 0){
+        if( recvData[TARGET] == 0){
             dataStop();
-            return;
         }
-        // not Target data
-        else if(recvData[TARGET] != getAddress()) {
-            return;
+        else if(recvData[TARGET] == address ){
+            if( millis() - startTime > waitTime){
+                startTime = millis();
+                printData(recvData);
+                // playMusic(recvData[SOUND_NUM],30);
+                if(digitalRead(soundBusy) == HIGH) myDFPlayer.play(recvData[SOUND_NUM]);
+                changeMotorState(recvData[MOTOR_TIME]*100);
+                changeLedColor(recvData[SCENE]);
+                updateLedColor();
+                // waitTime = (rand() % 35) *100 + 2000;
+                delay((rand() % 35) *100 + 2000 - recvData[MOTOR_TIME]*100);
+            }
         }
-        printData(recvData);
-        changeMotorState(recvData[MOTOR_TIME]*10);
-        playMusic(recvData[SOUND_NUM],30);
-        changeLedColor(recvData[SCENE]);
-        updateLedColor();
     }
 }

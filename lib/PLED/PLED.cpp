@@ -10,8 +10,8 @@ void PowerLed::changeStatus(LED_STATUS status){
             break;
         case LED_ERROR:
             // LED MODE CHANGE (Error Status) ==================
-            digitalWrite(this->green,LOW);
-            digitalWrite(this->red,HIGH);
+            digitalWrite(this->green, LOW);
+            digitalWrite(this->red,HIGH;
             break;
         case LED_GREEN:
             // LED MODE CHANGE (Error Status) =============

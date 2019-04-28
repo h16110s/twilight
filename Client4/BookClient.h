@@ -8,7 +8,7 @@
 #include <nRF24L01.h>
 #include <MirfHardwareSpiDriver.h>
 #include <Adafruit_NeoPixel.h>
-#include "PLED.h"
+#include <PLED.h>
 #ifdef __AVR__
   #include <avr/power.h>
 #endif
@@ -19,7 +19,7 @@
 #define SOUND_NUM 2
 #define SOUND_VOL 3
 #define MOTOR_TIME 4
-#define START_DELAY 5
+#define FAN 5
 #define BUF_SIZE 8      // reciev data size
 #define PIN 9
 #define LED_NUM 9

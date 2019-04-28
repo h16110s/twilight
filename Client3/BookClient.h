@@ -8,7 +8,6 @@
 #include <nRF24L01.h>
 #include <MirfHardwareSpiDriver.h>
 #include <Adafruit_NeoPixel.h>
-
 #ifdef __AVR__
   #include <avr/power.h>
 #endif
@@ -33,6 +32,12 @@ enum READ_STATUS{
     RFID_None,
     RFID_ERROR,
     RFID_GET,
+};
+
+enum LED_STATUS{
+    LED_INIT,
+    LED_ERROR,
+    LED_GREEN
 };
 // =========================================
 
@@ -61,7 +66,9 @@ void dataStop();
 void motorON();
 void motorOFF();
 void changeMotorState(int timer);
+String ledStatusToString(LED_STATUS ls);
 String readStatusToString(READ_STATUS rs);
+void changeLedStatus(LED_STATUS ls);
 void updateLedColor();
 void changeLedColor(int sceneNum);
 void setLedColor(int R, int G, int B);
