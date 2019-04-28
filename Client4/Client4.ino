@@ -17,6 +17,7 @@ void setup() {
     pinMode(motorL,OUTPUT);
     pinMode(ledG, OUTPUT);
     pinMode(ledR, OUTPUT);
+    pinMode(fan, OUTPUT);
 
     // LED MODE CHANGE (Initialize Status) =============
     pled.changeStatus(LED_INIT);
@@ -78,10 +79,12 @@ void loop() {
                 // playMusic(recvData[SOUND_NUM],30);
                 if(digitalRead(soundBusy) == HIGH) myDFPlayer.play(recvData[SOUND_NUM]);
                 changeMotorState(recvData[MOTOR_TIME]*100);
+                changeFanState(recvData[FAN]);
                 changeLedColor(recvData[SCENE]);
                 updateLedColor();
                 // waitTime = (rand() % 35) *100 + 2000;
-                delay((rand() % 35) *100 + 2000 - recvData[MOTOR_TIME]*100);
+                unsigned long endTime = millis():
+                delay((rand() % 35) *100 + 2000 - (endTime - startTime));
             }
         }
     }

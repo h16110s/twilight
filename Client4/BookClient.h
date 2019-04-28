@@ -20,6 +20,9 @@
 #define SOUND_VOL 3
 #define MOTOR_TIME 4
 #define FAN 5
+#define LIGHT_COLOR 6
+#define LIGHT_STATE 7
+
 #define BUF_SIZE 8      // reciev data size
 #define PIN 9
 #define LED_NUM 9
@@ -49,6 +52,7 @@ const int dip1 = 16;
 const int dip2 = 17; 
 const int dip3 = 18; 
 const int dip4 = 19; 
+const int fan = A6;
 // ======================================
 
 // Functions ============================
@@ -60,7 +64,10 @@ void dataPlay();
 void dataStop();
 void motorON();
 void motorOFF();
+void fanON();
+void fanOFF();
 void changeMotorState(int timer);
+void changeFanState(int status);
 String ledStatusToString(LED_STATUS ls);
 String readStatusToString(READ_STATUS rs);
 void changeLedStatus(LED_STATUS ls);

@@ -32,6 +32,14 @@ void motorON(){
     digitalWrite(motorR, HIGH);
 }
 
+void fanON(){
+    digitalWrite(fan,HIGH);
+}
+
+void fanOFF(){
+    digitalWrite(fan,LOW);
+}
+
 void motorOFF(){
     digitalWrite(motorR, LOW);
     digitalWrite(motorL, LOW);
@@ -112,22 +120,18 @@ void updateLedColor() {
 }
 
 void changeMotorState(int timer){
-    static unsigned long startTime;
-    // if(timer == 0){
-    //     motorOFF();
-    // }
-    // else if(digitalRead(motorL)==LOW && digitalRead(motorR)==LOW ){
-    //     startTime =  millis();
-    //     motorON();
-    // }
-    // else if(digitalRead(motorL)==HIGH && digitalRead(motorR)==HIGH ){
-    //     if(  millis() - startTime >= timer){
-    //         motorOFF();
-    //     }
-    // }
     motorON();
     delay(timer);
     motorOFF();
+}
+
+void changeMotorState(int state){
+    if(state == 0){
+        fanON();
+    }
+    else{
+        fanOFF();
+    }
 }
 
 void playMusic(int num, int vol){
