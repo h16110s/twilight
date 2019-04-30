@@ -55,13 +55,25 @@ void setup() {
     // LED MODE CHANGE (Green Status)===================
     pled.changeStatus(LED_GREEN);
     // =================================================
+
+    while(digitalRead(sw) == HIGH){}
+    myDFPlayer.play(0);
+    delay(100);
 }
 
 void loop() {
     unsigned long waitTime;
     unsigned long startTime;
+    static bool close = false;
     byte recvData[Mirf.payload] = {0};
-    if (Mirf.dataReady() ) {
+    if(digitalRead(sw) == LOW){
+        if(!close){
+            myDFPlayer.play(0);
+            close = true;
+        }
+        delay(100);
+    }
+    else if (Mirf.dataReady() ) {
         // Data Recive
         Mirf.getData(recvData);
         // Same SCENE data
@@ -88,4 +100,5 @@ void loop() {
             }
         }
     }
+    
 }
