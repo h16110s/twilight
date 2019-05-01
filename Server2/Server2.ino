@@ -55,6 +55,7 @@ SceneData Fish("04 B1 A0 62 BB 2B 80");
 SceneData Ghost("04 75 A0 62 BB 2B 80");
 SceneData Tarantula("04 94 A0 62 BB 2B 80");
 SceneData Labuka("04 58 A0 62 BB 2B 80");
+SceneData Building("04 95 39 72 D5 38 80");
 // =================================================
 
 void setup(){

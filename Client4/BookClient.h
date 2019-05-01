@@ -51,8 +51,8 @@ const int ledR = 15;
 const int dip1 = 16; 
 const int dip2 = 17; 
 const int dip3 = 18; 
-const int dip4 = 19; 
-const int fan = A6;
+// const int dip4 = 19; 
+const int fan = 19;
 // ======================================
 
 // Functions ============================

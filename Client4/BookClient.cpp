@@ -56,9 +56,9 @@ int getAddress(){
     if(digitalRead(dip3) == HIGH){
         address += 4;
     }
-    if(digitalRead(dip4) == HIGH){
-        address += 8;
-    }
+    // if(digitalRead(dip4) == HIGH){
+    //     address += 8;
+    // }
     return address;
 }
 
