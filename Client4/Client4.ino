@@ -1,4 +1,7 @@
 #include "BookClient.h"
+#include <DFPlayer_Mini_Mp3.h>
+
+
 
 PowerLed pled(ledR,ledG);
 int address;
@@ -6,13 +9,12 @@ int address;
 void setup() {
     Serial.begin (9600);
     myDFSerial.begin (9600);
-
-    pinMode(soundBusy,INPUT);
     pinMode(sw, INPUT);
+    pinMode(soundBusy,INPUT);
     pinMode(dip1, INPUT);
     pinMode(dip2, INPUT);
     pinMode(dip3, INPUT);
-    pinMode(dip4, INPUT);
+    // pinMode(, INPUT);
     pinMode(motorR,OUTPUT);
     pinMode(motorL,OUTPUT);
     pinMode(ledG, OUTPUT);
@@ -22,7 +24,6 @@ void setup() {
     // LED MODE CHANGE (Initialize Status) =============
     pled.changeStatus(LED_INIT);
     // =================================================
-
     address = getAddress();
 
 
@@ -34,6 +35,13 @@ void setup() {
     // myDFPlayer.begin(myDFSerial);
     Serial.println(F("DFPlayer 接続済み"));
     // =================================================
+    mp3_set_serial (myDFSerial);
+    mp3_set_volume (15);
+
+    while(digitalRead(sw) == HIGH){
+        Serial.println("Closed");
+        delay(100);
+    }
 
     // Network Initialize ==============================
     Mirf.spi = &MirfHardwareSpi;
@@ -41,11 +49,10 @@ void setup() {
     Mirf.setRADDR((byte *)"clie1");
     Mirf.payload = BUF_SIZE;
     Mirf.config();
-    Serial.print(getAddress());
+    Serial.println(address);
     // =================================================
 
     // NeoPixcel setup =================================
-
     #if defined (__AVR_ATtiny85__)
     if (F_CPU == 16000000) clock_prescale_set(clock_div_1);
     #endif
@@ -56,19 +63,21 @@ void setup() {
     pled.changeStatus(LED_GREEN);
     // =================================================
 
-    while(digitalRead(sw) == HIGH){}
-    myDFPlayer.play(0);
-    delay(100);
+    Serial.println("Ready");
+    mp3_play(0);
+    delay(3000);
 }
 
 void loop() {
+    // Serial.println("Start");
     unsigned long waitTime;
     unsigned long startTime;
     static bool close = false;
     byte recvData[Mirf.payload] = {0};
+    delay(10);
     if(digitalRead(sw) == LOW){
         if(!close){
-            myDFPlayer.play(0);
+            mp3_play(0);
             close = true;
         }
         delay(100);
@@ -89,14 +98,14 @@ void loop() {
                 startTime = millis();
                 printData(recvData);
                 // playMusic(recvData[SOUND_NUM],30);
-                if(digitalRead(soundBusy) == HIGH) myDFPlayer.play(recvData[SOUND_NUM]);
-                changeMotorState(recvData[MOTOR_TIME]*100);
+                if(digitalRead(soundBusy) == HIGH) mp3_play(recvData[SOUND_NUM]);
+                changeMotorState(recvData[MOTOR_TIME]*10);
                 changeFanState(recvData[FAN]);
                 changeLedColor(recvData[SCENE]);
                 updateLedColor();
                 // waitTime = (rand() % 35) *100 + 2000;
-                unsigned long endTime = millis():
-                delay((rand() % 35) *100 + 2000 - (endTime - startTime));
+                unsigned long endTime = millis();
+                delay((rand() % 35) *100 + 3000 - (endTime - startTime));
             }
         }
     }

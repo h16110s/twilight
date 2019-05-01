@@ -65,6 +65,7 @@ int getAddress(){
 void dataStop(){
     Serial.println("Data Stop");
     motorOFF();
+    fanOFF();
     // myDFPlayer.stop();
 }
 
@@ -125,12 +126,12 @@ void changeMotorState(int timer){
     motorOFF();
 }
 
-void changeMotorState(int state){
+void changeFanState(int state){
     if(state == 0){
-        fanON();
+      fanOFF();
     }
     else{
-        fanOFF();
+      fanON();
     }
 }
 

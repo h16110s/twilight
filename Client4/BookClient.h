@@ -78,7 +78,7 @@ void setLedColor(int R, int G, int B);
 
 
 // SerialPort and Grobal Value =======================
-static SoftwareSerial myDFSerial(soundRX, soundTX); // RX, TX
+static SoftwareSerial myDFSerial(2, 3); // RX, TX
 static DFRobotDFPlayerMini myDFPlayer;
 extern Adafruit_NeoPixel pixels;
 extern int targetLedColor[RGB];

@@ -91,58 +91,58 @@ void setup(){
     // SceneData Building("04 3b a0 62 bb 2b 80"); 
     
     byte giraffData[DEVICE_NUM][Mirf.payload] = {
-        {1,0,0,0,0,0,0,0},
-        {2,0,0,0,0,0,0,0},
-        {3,0,0,0,0,0,0,0},
-        {4,0,0,0,0,0,0,0}};
+        {0,3,0,0,0,0,0,0},
+        {0,3,0,0,0,0,0,0},
+        {0,3,0,0,0,0,0,0},
+        {0,3,0,0,0,0,0,0}};
 
     byte rhinoData[DEVICE_NUM][Mirf.payload] = {
-        {1,6,0,0,0,0,0,0},
-        {2,7,0,0,0,0,0,0},
-        {3,8,0,0,0,0,0,0},
-        {4,9,0,0,0,0,0,0}};
+        {1,6,6,0,0,0,0,0},
+        {2,6,7,0,0,0,0,0},
+        {3,6,8,0,0,0,0,0},
+        {4,6,9,0,0,0,0,0}};
 
     byte pandaData[DEVICE_NUM][Mirf.payload] = {
-        {1,0,0,0,0,0,0,0},
-        {2,0,0,0,0,0,0,0},
-        {3,0,0,0,0,0,0,0},
-        {4,0,0,0,0,0,0,0}};
+        {0,9,0,0,0,0,0,0},
+        {0,9,0,0,0,0,0,0},
+        {0,9,0,0,0,0,0,0},
+        {0,9,0,0,0,0,0,0}};
 
     byte rabbitData[DEVICE_NUM][Mirf.payload] = {
-        {1,3,4,2,5,2,7,7},
-        {2,3,4,5,5,2,7,7},
-        {3,0,0,0,0,0,0,0},
-        {4,0,0,0,0,0,0,0}};
+        {0,11,0,0,0,0,0,0},
+        {0,11,0,0,0,0,0,0},
+        {0,11,0,0,0,0,0,0},
+        {0,11,0,0,0,0,0,0}};
     
     byte fishData[DEVICE_NUM][Mirf.payload] = {
-        {1,2,0,10,5,2,7,7},
-        {2,3,0,15,5,2,7,7},
-        {3,4,0,10,0,0,0,0},
-        {4,5,0,15,0,0,0,0}};
+        {1,5,2,0,10,0,0,0},
+        {2,5,3,0,15,0,0,0},
+        {3,5,4,0,10,0,0,0},
+        {4,5,5,0,15,0,0,0}};
     
     byte ghostData[DEVICE_NUM][Mirf.payload] = {
-        {1,1,0,0,0,0,0,0},
-        {2,1,0,0,0,0,0,0},
-        {3,1,0,0,0,0,0,0},
-        {4,1,0,0,0,0,0,0}};
+        {1,4,1,0,0,0,0,0},
+        {2,4,1,0,0,0,0,0},
+        {3,4,1,0,0,0,0,0},
+        {4,4,1,0,0,0,0,0}};
         
     byte tarantulaData[DEVICE_NUM][Mirf.payload] = {
-        {1,0,0,0,0,0,0,0},
-        {2,0,0,0,0,0,0,0},
-        {3,0,0,0,0,0,0,0},
-        {4,0,0,0,0,0,0,0}};
+        {0,7,0,0,0,0,0,0},
+        {0,7,0,0,0,0,0,0},
+        {0,7,0,0,0,0,0,0},
+        {0,7,0,0,0,0,0,0}};
 
     byte labukaData[DEVICE_NUM][Mirf.payload] = {
-        {1,5,0,10,5,0,0,0},
-        {2,4,0,15,5,0,0,0},
-        {3,3,0,10,0,0,0,0},
-        {4,2,0,15,0,0,0,0}};
+        {1,10,5,0,10,0,0,0},
+        {2,10,4,0,15,0,0,0},
+        {3,10,3,0,10,0,0,0},
+        {4,10,2,0,15,0,0,0}};
 
     byte buildingData[DEVICE_NUM][Mirf.payload] = {
-        {1,10,0,0,0,1,0,0},
-        {2,11,0,200,1,0,0},
-        {3,12,0,100,1,0,0},
-        {4,13,0,0,0,1,0,0}};
+        {1,8,10,0,0,1,0,0},
+        {2,8,11,0,100,1,0,0},
+        {3,8,12,0,50,1,0,0},
+        {4,8,13,0,0,1,0,0}};
     
     for(int i = 0; i < DEVICE_NUM; i++){
         Giraffe.setSceneData(i,giraffData[i]); // ok
@@ -153,6 +153,7 @@ void setup(){
         Ghost.setSceneData(i,ghostData[i]);
         Tarantula.setSceneData(i,tarantulaData[i]);
         Labuka.setSceneData(i,labukaData[i]);
+        Building.setSceneData(i,buildingData[i]);
     }
 
 }
@@ -235,6 +236,9 @@ void loop(){
         }else if(strUID.equalsIgnoreCase(Labuka.UID)){
              Serial.println("Scene: Labuka");
             for(int i = 0; i < DEVICE_NUM; i++){ Labuka.getSceneData(i,sendData[i]); }
+        }else if(strUID.equalsIgnoreCase(Building.UID)){
+            Serial.println("Scene: Building");
+            for(int i = 0; i < DEVICE_NUM; i++){ Building.getSceneData(i,sendData[i]); }
         }
     }
     Serial.println("rfidState: " + readStatusToString(rfidState)+ " " + strUID);
