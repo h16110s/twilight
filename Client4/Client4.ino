@@ -9,8 +9,8 @@ int address;
 void setup() {
     Serial.begin (9600);
     myDFSerial.begin (9600);
-    pinMode(sw, INPUT);
     pinMode(soundBusy,INPUT);
+    pinMode(sw, INPUT);
     pinMode(dip1, INPUT);
     pinMode(dip2, INPUT);
     pinMode(dip3, INPUT);
@@ -20,12 +20,10 @@ void setup() {
     pinMode(ledG, OUTPUT);
     pinMode(ledR, OUTPUT);
     pinMode(fan, OUTPUT);
-
     // LED MODE CHANGE (Initialize Status) =============
     pled.changeStatus(LED_INIT);
     // =================================================
     address = getAddress();
-
 
     //DFPlayer Initialize ==============================
     // set softwareSerial for DFPlayer-mini mp3 module 
@@ -37,11 +35,11 @@ void setup() {
     // =================================================
     mp3_set_serial (myDFSerial);
     mp3_set_volume (15);
-
     while(digitalRead(sw) == HIGH){
         Serial.println("Closed");
         delay(100);
     }
+
 
     // Network Initialize ==============================
     Mirf.spi = &MirfHardwareSpi;
@@ -62,27 +60,16 @@ void setup() {
     // LED MODE CHANGE (Green Status)===================
     pled.changeStatus(LED_GREEN);
     // =================================================
-
-    Serial.println("Ready");
-    mp3_play(0);
-    delay(3000);
+    digitalWrite(sw,LOW);
 }
 
 void loop() {
     // Serial.println("Start");
     unsigned long waitTime;
     unsigned long startTime;
-    static bool close = false;
+    static bool close = true;
     byte recvData[Mirf.payload] = {0};
-    delay(10);
-    if(digitalRead(sw) == LOW){
-        if(!close){
-            mp3_play(0);
-            close = true;
-        }
-        delay(100);
-    }
-    else if (Mirf.dataReady() ) {
+    if (Mirf.dataReady() ) {
         // Data Recive
         Mirf.getData(recvData);
         // Same SCENE data
@@ -91,7 +78,22 @@ void loop() {
         // }
         // RFID none
         if( recvData[TARGET] == 0){
-            dataStop();
+            if(recvData[SCENE] == 2){        
+                if( close == true){
+                    if(digitalRead(soundBusy) == HIGH) mp3_play(0);
+                    close = false;
+                }
+            }
+            else if(recvData[SCENE] == 12){
+                // printData(recvData);
+                if(close == false){
+                    if(digitalRead(soundBusy) == HIGH) mp3_play(0);
+                    close = true;
+                }
+            }
+            else {
+                dataStop();
+            }
         }
         else if(recvData[TARGET] == address ){
             if( millis() - startTime > waitTime){

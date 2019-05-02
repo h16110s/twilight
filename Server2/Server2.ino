@@ -22,8 +22,8 @@ String getUID();
 
 
 // PIN ==========================================
-const int sw1 = 5;
-const int sw2 = 6;
+const int sw1 = 2;
+const int sw2 = 3;
 constexpr uint8_t RST_PIN = 9;          // Configurable, see typical pin layout above
 constexpr uint8_t SS_PIN = 10;         // Configurable, see typical pin layout above
 const int ledG = 14;
@@ -56,6 +56,7 @@ SceneData Ghost("04 75 A0 62 BB 2B 80");
 SceneData Tarantula("04 94 A0 62 BB 2B 80");
 SceneData Labuka("04 58 A0 62 BB 2B 80");
 SceneData Building("04 95 39 72 D5 38 80");
+// SceneData End();
 // =================================================
 
 void setup(){
@@ -69,7 +70,6 @@ void setup(){
     pinMode(dip4, INPUT);
     pinMode(ledG, OUTPUT);
     pinMode(ledR, OUTPUT);
-
     pled.changeStatus(LED_INIT);
 
     // MFRC522 Initialize ==================================================================================
@@ -144,6 +144,12 @@ void setup(){
         {3,8,12,0,50,1,0,0},
         {4,8,13,0,0,1,0,0}};
     
+    byte endingData[DEVICE_NUM][Mirf.payload] = {
+        {1,12,0,0,0,0,0,0},
+        {2,12,0,0,0,0,0,0},
+        {3,12,0,0,0,0,0,0},
+        {4,12,0,0,0,0,0,0}};
+    
     for(int i = 0; i < DEVICE_NUM; i++){
         Giraffe.setSceneData(i,giraffData[i]); // ok
         Rhino.setSceneData(i,rhinoData[i]); // ok
@@ -154,8 +160,39 @@ void setup(){
         Tarantula.setSceneData(i,tarantulaData[i]);
         Labuka.setSceneData(i,labukaData[i]);
         Building.setSceneData(i,buildingData[i]);
+        End.setSceneData(i,endingData[i]);
     }
 
+    Serial.println("Scene One Start");
+    while(true){
+        byte sceneOne[Mirf.payload] = {0,1,0,0,0,0,0,0};
+        if (!Mirf.isSending()) {
+            Mirf.send(sceneOne);
+            printData(sceneOne);
+            delay(100);
+        }
+        // Serial.println(digitalRead(sw1));
+        if(digitalRead(sw1) == HIGH || digitalRead(sw2) == HIGH){
+            break;
+        }
+    }
+    pled.changeStatus(GREEN);
+    Serial.println("Scene Two Start");
+    delay(2000);
+    pled.changeStatus(LED_INIT);
+    
+    while(true){
+        byte sceneTwo[Mirf.payload] = {0,2,0,0,0,0,0,0};
+        if (!Mirf.isSending()) {
+            Mirf.send(sceneTwo);
+            printData(sceneTwo);
+            delay(100);
+        }
+        // Serial.println(digitalRead(sw1));
+        if(digitalRead(sw1) == HIGH || digitalRead(sw2) == HIGH){
+            break;
+        }
+    }
 }
 
 void loop(){
@@ -239,6 +276,9 @@ void loop(){
         }else if(strUID.equalsIgnoreCase(Building.UID)){
             Serial.println("Scene: Building");
             for(int i = 0; i < DEVICE_NUM; i++){ Building.getSceneData(i,sendData[i]); }
+        }else if(strUID.equalsIgnoreCase(End.UID)){
+            Serial.println("Scene: Ending");
+            for(int i = 0; i < DEVICE_NUM; i++){ Ending.getSceneData(i,sendData[i]); }
         }
     }
     Serial.println("rfidState: " + readStatusToString(rfidState)+ " " + strUID);

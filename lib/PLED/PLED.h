@@ -5,7 +5,10 @@
 enum LED_STATUS{
     LED_INIT,
     LED_ERROR,
-    LED_GREEN
+    LED_GREEN,
+    LED_OFF,
+    GREEN,
+    RED,
 };
 
 class PowerLed{
