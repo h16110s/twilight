@@ -116,11 +116,12 @@ void loop() {
                 if(digitalRead(soundBusy) == HIGH) mp3_play(recvData[SOUND_NUM]);
                 changeMotorState(recvData[MOTOR_TIME]*10);
                 changeFanState(recvData[FAN]);
+                changeLedColor(recvData[SCENE],address);
                 // waitTime = (rand() % 35) *100 + 2000;
                 unsigned long endTime = millis();
                 delay((rand() % 35) *100 + 3000 - (endTime - startTime));
             }
         }
-        changeLedColor(recvData[SCENE],address);
+        
     }
 }
