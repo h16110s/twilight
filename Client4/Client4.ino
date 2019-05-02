@@ -1,6 +1,6 @@
 #include "BookClient.h"
 #include <DFPlayer_Mini_Mp3.h>
-
+#include <MsTimer2.h>
 
 
 PowerLed pled(ledR,ledG);
@@ -24,6 +24,8 @@ void setup() {
     pled.changeStatus(LED_INIT);
     // =================================================
     address = getAddress();
+
+    delay(5000);
 
     //DFPlayer Initialize ==============================
     // set softwareSerial for DFPlayer-mini mp3 module 
@@ -55,12 +57,18 @@ void setup() {
     if (F_CPU == 16000000) clock_prescale_set(clock_div_1);
     #endif
     pixels.begin();
+    for (int i = 0; i < NUMPIXELS; i++)
+        pixels.setPixelColor(i, pixels.Color(0, 0, 0));
+    pixels.show();
     // =================================================
 
     // LED MODE CHANGE (Green Status)===================
     pled.changeStatus(LED_GREEN);
     // =================================================
     digitalWrite(sw,LOW);
+    MsTimer2::set(50,updateLedColor);
+    MsTimer2::start();
+
 }
 
 void loop() {
@@ -81,6 +89,7 @@ void loop() {
             if(recvData[SCENE] == 2){        
                 if( close == true){
                     if(digitalRead(soundBusy) == HIGH) mp3_play(0);
+                    book_open();
                     close = false;
                 }
             }
@@ -89,6 +98,10 @@ void loop() {
                 if(close == false){
                     if(digitalRead(soundBusy) == HIGH) mp3_play(0);
                     close = true;
+                }
+                while(true){
+                    pled.changeStatus(LED_OFF);
+                    delay(1000);
                 }
             }
             else {
@@ -103,13 +116,11 @@ void loop() {
                 if(digitalRead(soundBusy) == HIGH) mp3_play(recvData[SOUND_NUM]);
                 changeMotorState(recvData[MOTOR_TIME]*10);
                 changeFanState(recvData[FAN]);
-                changeLedColor(recvData[SCENE]);
-                updateLedColor();
                 // waitTime = (rand() % 35) *100 + 2000;
                 unsigned long endTime = millis();
                 delay((rand() % 35) *100 + 3000 - (endTime - startTime));
             }
         }
+        changeLedColor(recvData[SCENE],address);
     }
-    
 }

@@ -26,8 +26,9 @@
 #define BUF_SIZE 8      // reciev data size
 #define PIN 9
 #define LED_NUM 9
-#define LED_BOOK 6
-#define LED_DOME 9
+#define LED_BOOK 10
+#define LED_DOME 15
+#define NUMPIXELS 15
 #define RGB 3
 // =========================================
 
@@ -74,6 +75,8 @@ void changeLedStatus(LED_STATUS ls);
 void updateLedColor();
 void changeLedColor(int sceneNum);
 void setLedColor(int R, int G, int B);
+void book_open();
+void changeLedColor(int sceneNum, int add);
 // ======================================
 
 

@@ -6,6 +6,17 @@
 #include "enum.h"
 #include <PLED.h>
 #include <SceneData.h>
+#include <Adafruit_NeoPixel.h>
+
+#ifdef __AVR__
+#include <avr/power.h>
+#endif
+
+// NeoPixel =====================================
+#define PIN            6
+#define NUMPIXELS      65
+// ==============================================
+
 
 // Define =======================================
 #define DELAY_TIME 200
@@ -44,11 +55,13 @@ READ_STATUS rfidState = RFID_None;
 
 // LED
 PowerLed pled(ledR, ledG);
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+
 
 
 // Scene Instance ==================================
 SceneData Giraffe("04 76 A0 62 BB 2B 80");
-SceneData Rhino("04 3B A0 62 BB 2B 80"); 
+SceneData Rhino("04 8c e0 72 d5 38 80"); 
 SceneData Panda("04 3A A0 62 BB 2B 80");    
 SceneData Rabbit("04 93 A0 62 BB 2B 80");
 SceneData Fish("04 B1 A0 62 BB 2B 80");
@@ -56,7 +69,7 @@ SceneData Ghost("04 75 A0 62 BB 2B 80");
 SceneData Tarantula("04 94 A0 62 BB 2B 80");
 SceneData Labuka("04 58 A0 62 BB 2B 80");
 SceneData Building("04 95 39 72 D5 38 80");
-// SceneData End();
+SceneData End("04 A2 E0 72 D5 38 80");
 // =================================================
 
 void setup(){
@@ -89,7 +102,22 @@ void setup(){
     // =============================================================
     Serial.println(F("Scan PICC to see UID"));
     // SceneData Building("04 3b a0 62 bb 2b 80"); 
+
+
+    // Full Color LED ==============================================
+    #if defined (__AVR_ATtiny85__)
+        if (F_CPU == 16000000) clock_prescale_set(clock_div_1);
+    #endif
+    pixels.begin();
+
+    //--- white ---
+    for (int i = 0; i < NUMPIXELS; i++) {
+        pixels.setPixelColor(i, pixels.Color(150, 150, 150));
+    }
+    pixels.show();
+    // =============================================================
     
+    // Make SceneData ==============================================
     byte giraffData[DEVICE_NUM][Mirf.payload] = {
         {0,3,0,0,0,0,0,0},
         {0,3,0,0,0,0,0,0},
@@ -145,10 +173,10 @@ void setup(){
         {4,8,13,0,0,1,0,0}};
     
     byte endingData[DEVICE_NUM][Mirf.payload] = {
-        {1,12,0,0,0,0,0,0},
-        {2,12,0,0,0,0,0,0},
-        {3,12,0,0,0,0,0,0},
-        {4,12,0,0,0,0,0,0}};
+        {0,12,0,0,0,0,0,0},
+        {0,12,0,0,0,0,0,0},
+        {0,12,0,0,0,0,0,0},
+        {0,12,0,0,0,0,0,0}};
     
     for(int i = 0; i < DEVICE_NUM; i++){
         Giraffe.setSceneData(i,giraffData[i]); // ok
@@ -162,6 +190,9 @@ void setup(){
         Building.setSceneData(i,buildingData[i]);
         End.setSceneData(i,endingData[i]);
     }
+
+    // ==============================================================
+
 
     Serial.println("Scene One Start");
     while(true){
@@ -278,7 +309,7 @@ void loop(){
             for(int i = 0; i < DEVICE_NUM; i++){ Building.getSceneData(i,sendData[i]); }
         }else if(strUID.equalsIgnoreCase(End.UID)){
             Serial.println("Scene: Ending");
-            for(int i = 0; i < DEVICE_NUM; i++){ Ending.getSceneData(i,sendData[i]); }
+            for(int i = 0; i < DEVICE_NUM; i++){ End.getSceneData(i,sendData[i]); }
         }
     }
     Serial.println("rfidState: " + readStatusToString(rfidState)+ " " + strUID);
