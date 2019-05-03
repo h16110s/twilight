@@ -66,9 +66,6 @@ void setup() {
     pled.changeStatus(LED_GREEN);
     // =================================================
     digitalWrite(sw,LOW);
-    MsTimer2::set(50,updateLedColor);
-    MsTimer2::start();
-
 }
 
 void loop() {
@@ -85,11 +82,14 @@ void loop() {
         //     return;
         // }
         // RFID none
+        changeLedColor(recvData[SCENE],address);
         if( recvData[TARGET] == 0){
             if(recvData[SCENE] == 2){        
                 if( close == true){
                     if(digitalRead(soundBusy) == HIGH) mp3_play(0);
                     book_open();
+                    MsTimer2::set(50,updateLedColor);
+                    MsTimer2::start();
                     close = false;
                 }
             }
@@ -116,7 +116,6 @@ void loop() {
                 if(digitalRead(soundBusy) == HIGH) mp3_play(recvData[SOUND_NUM]);
                 changeMotorState(recvData[MOTOR_TIME]*10);
                 changeFanState(recvData[FAN]);
-                changeLedColor(recvData[SCENE],address);
                 // waitTime = (rand() % 35) *100 + 2000;
                 unsigned long endTime = millis();
                 delay((rand() % 35) *100 + 3000 - (endTime - startTime));

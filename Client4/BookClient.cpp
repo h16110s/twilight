@@ -71,11 +71,10 @@ void dataStop(){
 }
 
 void setLedColor(int R, int G, int B) {
-    targetLedColor[0] = G;
-    targetLedColor[1] = R;
+    targetLedColor[0] = R;
+    targetLedColor[1] = G;
     targetLedColor[2] = B;
 }
-
 
 void changeLedColor(int sceneNum, int add) {
   switch (sceneNum) {
@@ -93,13 +92,13 @@ void changeLedColor(int sceneNum, int add) {
 
     case 3:
       if (add == 1)
-        setLedColor(40, 100, 40); //黄緑系
+        setLedColor(40, 100, 20); //黄緑系
       else if (add == 2)
         setLedColor(40, 100, 0);
       else if (add == 3)
-        setLedColor(60, 100, 20);
+        setLedColor(50, 100, 10);
       else if (add == 4)
-        setLedColor(0, 100, 20);
+        setLedColor(25, 100, 10);
       break;
 
     case 4:
@@ -110,53 +109,54 @@ void changeLedColor(int sceneNum, int add) {
       else if (add == 3)
         setLedColor(0, 100, 0); //緑
       else if (add == 4)
-        setLedColor(100, 95, 0); //橙
+        setLedColor(100, 30, 0); //橙
       break;
 
     case 5:
-      setLedColor(70, 100, 20); //水
+      setLedColor(0, 70, 70); //水
       break;
 
     case 6:
-      setLedColor(70, 100, 20); //蛍色
+      setLedColor(70, 100, 10); //蛍色
       break;
 
     case 7:
-      setLedColor(100, 0, 0); //赤
+      setLedColor(70, 0, 0); //赤
       break;
 
     case 8:
-      setLedColor(100, 100, 0); //黄
+      setLedColor(70, 70, 0); //黄
       break;
 
+
     case 9:
-      if (add == 1)
-        setLedColor(0, 100, 30); //緑系
-      else if (add == 2)
-        setLedColor(0, 100, 10);
-      else if (add == 3)
-        setLedColor(0, 100, 40);
-      else if (add == 4)
-        setLedColor(0, 100, 20);
+        if (add == 1)
+          setLedColor(50, 100, 10); //黄緑系
+        else if (add == 2)
+          setLedColor(25, 100, 10);
+        else if (add == 3)
+          setLedColor(40, 100, 20);
+        else if (add == 4)
+          setLedColor(40, 100, 0);
       break;
 
     case 10:
-      setLedColor(0, 0, 100); //青
+      setLedColor(0, 0, 70); //青
       break;
 
     case 11:
       if (add == 1)
-        setLedColor(100, 50, 0); //橙
+        setLedColor(70, 40, 0); //黄
       else if (add == 2)
-        setLedColor(100, 0, 0); //赤
+        setLedColor(70, 10, 0); //橙
       else if (add == 3)
-        setLedColor(100, 50, 0); //橙
+        setLedColor(70, 40, 0); //黄
       else if (add == 4)
-        setLedColor(100, 0, 0); //赤
+        setLedColor(70, 10, 0); //橙
       break;
 
     case 12:
-      setLedColor(0, 100, 100); //水
+      setLedColor(0, 70, 70); //水
       break;
 
     case 13:
@@ -168,6 +168,7 @@ void changeLedColor(int sceneNum, int add) {
       break;
   }
 }
+
 
 
 void updateLedColor() {
