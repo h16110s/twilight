@@ -1,5 +1,5 @@
-# twilightプロジェクト（自称）
-創作工房の光る絵本プロジェクトの派生  
+# twilightプロジェクト（プロジェクト名自称）
+LittleHOPPERの光る絵本プロジェクトの派生  
 読み聞かせ用のデバイスを製作予定
 
 ## 使用Arduinoライブラリ
@@ -58,3 +58,6 @@ LEDにはMsTime2で割り込み更新を入れた
 - RFID https://dotstud.io/blog/arduino-use-rfid-reader/
 - DFPlayer-Mini-mp3 https://make-muda.net/2016/09/4585/
 - DFPlayer-Mini https://blog.techlab-xe.net/archives/5843
+
+# 協力
+- [LittleHOPPER](https://www.lilhopper.com/)
